@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ghala/otclist.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   Home();
@@ -12,15 +13,23 @@ class CustomerData {
   CustomerData({this.name});
   String name;
   List<OtcData> otcList;
+  int debt = 0;
+  DateTime updated = DateTime.now().toUtc();
 }
 
 /// ユーザーリストを保持する
 /// このリストを選択して、ユーザーごとに配置している薬リストを表示する。
-class CustomerDb{  
+class CustomerDb {
   static Future<List<CustomerData>> getUserAll() async {
-    List<CustomerData> result = List<CustomerData> ();
-    result.add(CustomerData(name:'abc'));
-    result.add(CustomerData(name:'def'));
+    List<CustomerData> result = List<CustomerData>();
+    result.add(CustomerData(name: 'abc1'));
+    result.add(CustomerData(name: 'def2'));
+    result.add(CustomerData(name: 'abc3'));
+    result.add(CustomerData(name: 'def4'));
+    result.add(CustomerData(name: 'abc5'));
+    result.add(CustomerData(name: 'def6'));
+    result.add(CustomerData(name: 'abc7'));
+    result.add(CustomerData(name: 'def8'));
     return result;
   }
 }
@@ -54,40 +63,14 @@ class _WhatsAppHomeState extends State<Home>
     return new Scaffold(
       appBar: appBar(),
       body: body(),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   currentIndex: 0,
-      //   selectedItemColor: Colors.black,
-      //   unselectedItemColor: Colors.black,
-      //   selectedFontSize: 12.0,
-      //   unselectedFontSize: 12.0,
-      //   showSelectedLabels: true,
-      //   showUnselectedLabels: true,
-      //   onTap: (int index) {
-      //     if (index == 3) {
-      //       _onTap(0);
-      //     } else {
-      //       _onSwitch(index);
-      //     }
-      //   },
-      //   items: [
-      //     BottomNavigationBarItem(
-      //       icon: new Icon(null),
-      //       title: new Text('メモ'),
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: new Icon(null),
-      //       title: new Text('カレンダー'),
-      //     )
-      //   ],
+      // floatingActionButton: new FloatingActionButton(
+      //   backgroundColor: Theme.of(context).accentColor,
+      //   child: new Icon(
+      //     Icons.note_add,
+      //     color: Colors.white,
+      //   ),
+      //   onPressed: () => _onTap(-1),
       // ),
-      floatingActionButton: new FloatingActionButton(
-        backgroundColor: Theme.of(context).accentColor,
-        child: new Icon(
-          Icons.note_add,
-          color: Colors.white,
-        ),
-        onPressed: () => _onTap(-1),
-      ),
     );
   }
 
@@ -106,20 +89,25 @@ class _WhatsAppHomeState extends State<Home>
     );
   }
 
-  void _onSwitch(index) async {
-  }
+  void _onSwitch(index) async {}
 
   Widget body() {
     int len = _customerList != null ? _customerList.length : 0;
     return new Column(children: <Widget>[
       new Flexible(
         child: new ListView.builder(
+          physics: BouncingScrollPhysics(),
           reverse: false,
           itemCount: len,
           itemBuilder: (context, i) => _buildCustomerItem(i),
         ),
       ),
     ]);
+  }
+
+  String date(customer) {
+    final _formatter = DateFormat("MM/dd HH:mm");
+    return _formatter.format(customer.updated.toLocal());
   }
 
   Widget _buildCustomerItem(int i) {
@@ -146,10 +134,17 @@ class _WhatsAppHomeState extends State<Home>
                   customer.name,
                   style: new TextStyle(fontWeight: FontWeight.bold),
                 ),
-                // new Text(
-                //   memo.created,
-                //   style: new TextStyle(color: Colors.grey, fontSize: 14.0),
-                // ),
+                new Text(
+                  customer.debt.toString(),
+                  style: new TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[300],
+                  ),
+                ),
+                new Text(
+                  date(customer),
+                  style: new TextStyle(color: Colors.grey, fontSize: 14.0),
+                ),
               ],
             ),
             // subtitle: new Container(
@@ -172,7 +167,8 @@ class _WhatsAppHomeState extends State<Home>
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => new OtcListScreen(customer: _customerList[index])));
+            builder: (context) =>
+                new OtcListScreen(customer: _customerList[index])));
   }
 
   void deleteDialog(int index) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ghala/home.dart';
+import 'package:intl/intl.dart';
 
 class OtcListScreen extends StatefulWidget {
   OtcListScreen({this.customer});
@@ -12,15 +13,25 @@ class OtcListScreen extends StatefulWidget {
 
 class OtcData {
   OtcData({this.name, this.priceLabel});
+  // 薬名
   String name;
-  int count = 0;
+  // 単価
+  int price = 1000;
   String priceLabel;
+  // 前回記録した個数
+  int base = 5;
+  // 今回チェックした個数
+  int count = 0;
+  // 今回追加した個数
+  int add = 0;
 }
 
 /// OTCリストを保持する
 class OtcDb {
   static Future<List<OtcData>> getOtcAll() async {
     List<OtcData> result = List<OtcData>();
+    result.add(OtcData(name: 'abc', priceLabel: '100'));
+    result.add(OtcData(name: 'def', priceLabel: '100'));
     result.add(OtcData(name: 'abc', priceLabel: '100'));
     result.add(OtcData(name: 'def', priceLabel: '100'));
     return result;
@@ -47,7 +58,7 @@ class _OtcListState extends State<OtcListScreen>
     if (customer.otcList == null) {
       customer.otcList = await OtcDb.getOtcAll();
     }
-    
+
     setState(() {
       _otcList = customer.otcList;
     });
@@ -62,32 +73,6 @@ class _OtcListState extends State<OtcListScreen>
     return new Scaffold(
       appBar: appBar(),
       body: body(),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        selectedFontSize: 12.0,
-        unselectedFontSize: 12.0,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        onTap: (int index) {
-          if (index == 3) {
-            _onTap(0);
-          } else {
-            _onSwitch(index);
-          }
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.shop),
-            title: new Text('在庫'),
-          ),
-          BottomNavigationBarItem(
-            icon: new Icon(Icons.money_off),
-            title: new Text('集金'),
-          )
-        ],
-      ),
     );
   }
 
@@ -95,28 +80,27 @@ class _OtcListState extends State<OtcListScreen>
     return new AppBar(
       title: new GestureDetector(
         onTap: () {
-          reload();
-          // MemoDb.delete();
+          // reload();
         },
-        child: Center(
-          child: Text(customer.name),
-        ),
+        child: Text(customer.name),
       ),
       elevation: 0.7,
     );
   }
 
-  void _onSwitch(index) async {}
-
   Widget body() {
     return new Column(children: <Widget>[
       new Flexible(
         child: new ListView.builder(
+          physics: BouncingScrollPhysics(),
           reverse: false,
           itemCount: _otcList.length,
           itemBuilder: (context, i) => _buildCustomerItem(i),
         ),
       ),
+      new Divider(height: 1.0),
+      _buildBottomNavigationBar(),
+      _buildBottomButton(),
     ]);
   }
 
@@ -151,97 +135,28 @@ class _OtcListState extends State<OtcListScreen>
                 title: Container(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
                       Text(
                         otc.name,
                         // overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 18.0),
+                            fontWeight: FontWeight.w700, fontSize: 20.0),
                       ),
                       Text(
-                        otc.priceLabel,
+                        otc.price.toString(),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             color: Colors.red[300],
                             fontWeight: FontWeight.w700,
-                            fontSize: 18.0),
+                            fontSize: 20.0),
                       ),
                     ],
                   ),
                 ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  getChip(otc.count.toString(), Colors.black),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  Flexible(
-                    fit: FlexFit.tight,
-                    flex: 1,
-                    child: RaisedButton(
-                      onPressed: () async {
-                        _count(otc, -1);
-                      },
-                      color: Colors.grey,
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            // Icon(
-                            //   Icons.min,
-                            //   color: Colors.white,
-                            // ),
-                            SizedBox(
-                              width: 4.0,
-                            ),
-                            Text(
-                              "-",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  Flexible(
-                    flex: 1,
-                    child: RaisedButton(
-                      onPressed: () async {
-                        _count(otc, 1);
-                      },
-                      color: Colors.grey,
-                      child: Center(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            // Icon(
-                            //   Icons.arrow_back,
-                            //   color: Colors.white,
-                            // ),
-                            SizedBox(
-                              width: 4.0,
-                            ),
-                            Text(
-                              "+",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              _buildButton1(otc),
+              _buildButton2(otc),
             ],
           ),
           onPressed: () async {
@@ -250,13 +165,196 @@ class _OtcListState extends State<OtcListScreen>
         ));
   }
 
+  Widget _buildButton1(OtcData otc) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        label('残り'),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        getChip(otc.count.toString() + "/" + otc.base.toString(), Colors.black),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        Flexible(
+          fit: FlexFit.tight,
+          flex: 1,
+          child: RaisedButton(
+            onPressed: () async {
+              _count(otc, -1);
+            },
+            color: Colors.grey,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Icon(
+                  //   Icons.min,
+                  //   color: Colors.white,
+                  // ),
+                  SizedBox(
+                    width: 4.0,
+                  ),
+                  Text(
+                    "-",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        Flexible(
+          flex: 1,
+          child: RaisedButton(
+            onPressed: () async {
+              _count(otc, 1);
+            },
+            color: Colors.grey,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Icon(
+                  //   Icons.arrow_back,
+                  //   color: Colors.white,
+                  // ),
+                  SizedBox(
+                    width: 4.0,
+                  ),
+                  Text(
+                    "+",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildButton2(OtcData otc) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        label('追加'),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        getChip(otc.add.toString() + "/" + (otc.count + otc.add).toString(),
+            Colors.black),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        Flexible(
+          fit: FlexFit.tight,
+          flex: 1,
+          child: RaisedButton(
+            onPressed: () async {
+              _add(otc, -1);
+            },
+            color: Colors.grey,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Icon(
+                  //   Icons.min,
+                  //   color: Colors.white,
+                  // ),
+                  SizedBox(
+                    width: 4.0,
+                  ),
+                  Text(
+                    "-",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        Flexible(
+          flex: 1,
+          child: RaisedButton(
+            onPressed: () async {
+              _add(otc, 1);
+            },
+            color: Colors.grey,
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // Icon(
+                  //   Icons.arrow_back,
+                  //   color: Colors.white,
+                  // ),
+                  SizedBox(
+                    width: 4.0,
+                  ),
+                  Text(
+                    "+",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+      ],
+    );
+  }
+
   void _count(OtcData otc, int i) {
     if (i < 0 && otc.count == 0) {
+      i = 0;
+    }
+    if (i > 0 && otc.base < otc.count + i) {
       i = 0;
     }
     setState(() {
       otc.count += i;
     });
+  }
+
+  void _add(OtcData otc, int i) {
+    if (i < 0 && otc.add == 0) {
+      i = 0;
+    }
+    setState(() {
+      otc.add += i;
+    });
+  }
+
+  Widget label(String label) {
+    return Text(label, style: TextStyle(color: Colors.black, fontSize: 20.0));
+  }
+
+  Widget labelColor(String label, Color color) {
+    return Text(label, style: TextStyle(color: color, fontSize: 20.0));
   }
 
   Widget getChip(String label, Color color) {
@@ -272,5 +370,249 @@ class _OtcListState extends State<OtcListScreen>
   // 画像ファイルを取得する
   Widget _loadImage(String name) {
     return Image.asset("assets/mdb/noimage.png");
+  }
+
+  // 利用額
+  int use = 0;
+
+  // 集金額
+  int collection = 0;
+
+  // 価格
+  _buildBottomNavigationBar() {
+    // 利用額
+    use = 0;
+    for (var otc in _otcList) {
+      var n = otc.base - otc.count;
+      if (n > 0) {
+        use += n * otc.price;
+      }
+    }
+
+    // 負債額
+    int debt = customer.debt;
+
+    // 請求額
+    int claim = use + debt;
+
+    // 次回請求額
+    int next = claim - collection;
+
+    return Container(
+        width: MediaQuery.of(context).size.width,
+        // height: 85.0,
+        child: Column(
+          children: <Widget>[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                label('利用額'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                labelColor(use.toString(), Colors.red[300]),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                label('未払い金'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                labelColor(debt.toString(), Colors.red[300]),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                label('請求額'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                labelColor(claim.toString(), Colors.red[300]),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                label('集金額'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                _buildTextComposer(),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                label('残未払い金'),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                labelColor(next.toString(), Colors.red[300]),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+              ],
+            ),
+          ],
+        ));
+  }
+
+  final TextEditingController _textController = new TextEditingController();
+  bool _isComposing = false;
+
+  // 自由入力フィールド
+  Widget _buildTextComposer() {
+    return Flexible(
+      child: Padding(
+        padding: EdgeInsets.all(4.0),
+        child: OutlineButton(
+          borderSide: BorderSide(width: 1.0, color: Colors.grey),
+          shape: new RoundedRectangleBorder(
+              borderRadius: new BorderRadius.circular(10.0)),
+          padding: new EdgeInsets.all(10.0),
+          child: new TextField(
+            keyboardType: TextInputType.number,
+            controller: _textController,
+            onChanged: (String text) {
+              setState(() {
+                _isComposing = text.length > 0;
+              });
+            },
+            onSubmitted: _isComposing ? _handleSubmitted : null,
+            decoration: new InputDecoration.collapsed(hintText: "集金額を入力してください"),
+          ),
+          onPressed: () async {},
+        ),
+      ),
+    );
+  }
+
+  // 送信したテキストでシナリオを実行する
+  void _handleSubmitted(String text) {
+    // _textController.clear();
+    collection = int.parse(text);
+  }
+
+  _buildBottomButton() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      height: 50.0,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: <Widget>[
+          Flexible(
+            fit: FlexFit.tight,
+            flex: 1,
+            child: RaisedButton(
+              onPressed: () async {
+                Navigator.pop(context, false);
+              },
+              color: Colors.grey,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.arrow_back,
+                      color: Colors.white,
+                    ),
+                    SizedBox(
+                      width: 4.0,
+                    ),
+                    Text(
+                      "Back",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            fit: FlexFit.tight,
+            flex: 2,
+            child: RaisedButton(
+              onPressed: () async {
+                _handleDone();
+              },
+              color: Colors.blue,
+              child: Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(
+                      Icons.check,
+                      color: Colors.white,
+                    ),
+                    SizedBox(
+                      width: 4.0,
+                    ),
+                    Text(
+                      "Done",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleDone() {
+    // 請求額
+    int claim = use + customer.debt;
+
+    // 次回請求額
+    customer.debt = claim - collection;
+
+    // 在庫数
+    for (var otc in _otcList) {
+      otc.base = otc.count + otc.add;
+      otc.count = 0;
+    }
+
+    // 更新日時
+    customer.updated = DateTime.now().toUtc();
+
+    Navigator.pop(context, false);
   }
 }
