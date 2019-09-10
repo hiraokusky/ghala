@@ -382,11 +382,17 @@ class _OtcListState extends State<OtcListScreen>
   _buildBottomNavigationBar() {
     // 利用額
     use = 0;
+    int sum = 0;
     for (var otc in _otcList) {
+      sum += otc.count;
       var n = otc.base - otc.count;
       if (n > 0) {
         use += n * otc.price;
       }
+    }
+    // 未入力なら
+    if (sum == 0) {
+      use = 0;
     }
 
     // 負債額
@@ -414,7 +420,7 @@ class _OtcListState extends State<OtcListScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                labelColor(use.toString(), Colors.red[300]),
+                labelColor(use > 0 ? use.toString() : "-", Colors.red[300]),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -604,10 +610,12 @@ class _OtcListState extends State<OtcListScreen>
     // 次回請求額
     customer.debt = claim - collection;
 
-    // 在庫数
-    for (var otc in _otcList) {
-      otc.base = otc.count + otc.add;
-      otc.count = 0;
+    if (use > 0) {
+      // 在庫数
+      for (var otc in _otcList) {
+        otc.base = otc.count + otc.add;
+        otc.count = 0;
+      }
     }
 
     // 更新日時
