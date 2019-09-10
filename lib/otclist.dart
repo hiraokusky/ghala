@@ -121,9 +121,9 @@ class _OtcListState extends State<OtcListScreen>
     return Padding(
         padding: new EdgeInsets.all(4.0),
         child: OutlineButton(
-          borderSide: BorderSide(width: 1.0, color: Colors.black),
-          shape: new RoundedRectangleBorder(
-              borderRadius: new BorderRadius.circular(0.0)),
+          // borderSide: BorderSide(width: 1.0, color: Colors.black),
+          // shape: new RoundedRectangleBorder(
+          //     borderRadius: new BorderRadius.circular(0.0)),
           padding:
               EdgeInsets.only(top: 4.0, right: 4.0, bottom: 0.0, left: 4.0),
           child: Column(
@@ -188,7 +188,7 @@ class _OtcListState extends State<OtcListScreen>
             onPressed: () async {
               _count(otc, -1);
             },
-            color: Colors.grey,
+            color: Colors.lightBlue,
             child: Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -218,7 +218,7 @@ class _OtcListState extends State<OtcListScreen>
             onPressed: () async {
               _count(otc, 1);
             },
-            color: Colors.grey,
+            color: Colors.green,
             child: Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -270,7 +270,7 @@ class _OtcListState extends State<OtcListScreen>
             onPressed: () async {
               _add(otc, -1);
             },
-            color: Colors.grey,
+            color: Colors.lightBlue,
             child: Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -300,7 +300,7 @@ class _OtcListState extends State<OtcListScreen>
             onPressed: () async {
               _add(otc, 1);
             },
-            color: Colors.grey,
+            color: Colors.green,
             child: Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
