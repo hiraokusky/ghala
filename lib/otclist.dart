@@ -12,12 +12,11 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.priceLabel});
+  OtcData({this.name, this.price});
   // 薬名
   String name;
   // 単価
   int price = 1000;
-  String priceLabel;
   // 前回記録した個数
   int base = 5;
   // 今回チェックした個数
@@ -30,10 +29,10 @@ class OtcData {
 class OtcDb {
   static Future<List<OtcData>> getOtcAll() async {
     List<OtcData> result = List<OtcData>();
-    result.add(OtcData(name: 'abc', priceLabel: '100'));
-    result.add(OtcData(name: 'def', priceLabel: '100'));
-    result.add(OtcData(name: 'abc', priceLabel: '100'));
-    result.add(OtcData(name: 'def', priceLabel: '100'));
+    result.add(OtcData(name: 'abc', price: 1000));
+    result.add(OtcData(name: 'def', price: 1100));
+    result.add(OtcData(name: 'abc', price: 1200));
+    result.add(OtcData(name: 'def', price: 1300));
     return result;
   }
 }
@@ -615,6 +614,7 @@ class _OtcListState extends State<OtcListScreen>
       for (var otc in _otcList) {
         otc.base = otc.count + otc.add;
         otc.count = 0;
+        otc.add = 0;
       }
     }
 
