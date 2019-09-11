@@ -70,10 +70,13 @@ class _OtcListState extends State<OtcListScreen>
 
   Widget screen() {
     return new Scaffold(
+      key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
     );
   }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   Widget appBar() {
     return new AppBar(
@@ -88,6 +91,9 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   Widget body() {
+    if (_otcList == null) {
+      _otcList = List<OtcData>();
+    }
     return new Column(children: <Widget>[
       new Flexible(
         child: new ListView.builder(
@@ -603,13 +609,20 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   void _handleDone() {
-    // 請求額
-    int claim = use + customer.debt;
-
-    // 次回請求額
-    customer.debt = claim - collection;
-
     if (use > 0) {
+      // baseがあるのにcountが0ならcaution
+      var caution = false;
+      for (var otc in _otcList) {
+        if (otc.base > 0 && otc.count == 0 && otc.add == 0) {
+          caution = true;
+        }
+      }
+      if (caution) {
+        final snackBar = SnackBar(content: Text('数えていない商品があります'));
+        _scaffoldKey.currentState.showSnackBar(snackBar);
+        return;
+      }
+
       // 在庫数
       for (var otc in _otcList) {
         otc.base = otc.count + otc.add;
@@ -617,6 +630,12 @@ class _OtcListState extends State<OtcListScreen>
         otc.add = 0;
       }
     }
+
+    // 請求額
+    int claim = use + customer.debt;
+
+    // 次回請求額
+    customer.debt = claim - collection;
 
     // 更新日時
     customer.updated = DateTime.now().toUtc();
