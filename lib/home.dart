@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ghala/googlesheets.dart';
 import 'package:ghala/otclist.dart';
+import 'package:ghala/secret.dart';
 import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
@@ -12,24 +14,72 @@ class Home extends StatefulWidget {
 class CustomerData {
   CustomerData({this.name});
   String name;
-  List<OtcData> otcList;
-  int debt = 0;
-  DateTime updated = DateTime.now().toUtc();
+  List<OtcData> otcList = List<OtcData>();
+  int debt;
+  DateTime updated;
 }
 
 /// ユーザーリストを保持する
 /// このリストを選択して、ユーザーごとに配置している薬リストを表示する。
 class CustomerDb {
-  static Future<List<CustomerData>> getUserAll() async {
+  static var sheetId = Secret.sheetId;
+  static var sheet = Map<String, dynamic>();
+
+  static Future<void> saveAsSheets(List<CustomerData> list) async {
+    int n = 0;
+    for (var row in list) {
+      sheet.values.last[++n] = ['A', row.name, 'updated', row.updated.toUtc().toIso8601String()];
+      sheet.values.last[++n] = ['', '', 'debt', row.debt];
+      for (var otc in row.otcList) {
+        sheet.values.last[++n] = ['', '', otc.name, otc.base];
+      }
+    }
+    print(sheet);
+    await Sheets.save(sheetId, sheet);
+  }
+
+  static Future<List<CustomerData>> loadFromSheets() async {
+    var range = 'A1:D100';
+    sheet = await Sheets.load(sheetId, range);
+    print(sheet.values.last);
+
     List<CustomerData> result = List<CustomerData>();
-    result.add(CustomerData(name: 'abc1'));
-    result.add(CustomerData(name: 'def2'));
-    result.add(CustomerData(name: 'abc3'));
-    result.add(CustomerData(name: 'def4'));
-    result.add(CustomerData(name: 'abc5'));
-    result.add(CustomerData(name: 'def6'));
-    result.add(CustomerData(name: 'abc7'));
-    result.add(CustomerData(name: 'def8'));
+    int n = 0;
+    var customer = '';
+    CustomerData user = null;
+    for (var row in sheet.values.last) {
+      n++;
+      if (n == 1) {
+        continue;
+      }
+      var i = 0;
+      try {
+        var staff = row[i++];
+        String name = row[i++];
+        if (name.length > 0) {
+          if (user != null) {
+            result.add(user);
+          }
+          customer = name;
+          user = CustomerData(name: name);
+        }
+        var key = row[i++];
+        var value = row[i++];
+
+        if (key == 'updated') {
+          user.updated = DateTime.parse(value);
+        } else if (key == 'debt') {
+          user.debt = int.parse(value);
+        } else {
+          var otc = OtcData(name: key, base: int.parse(value));
+          user.otcList.add(otc);
+        }
+      } catch (e) {
+        print(e);
+        continue;
+      }
+    }
+    result.add(user);
     return result;
   }
 }
@@ -48,10 +98,16 @@ class _WhatsAppHomeState extends State<Home>
   }
 
   void reload() async {
-    var list = await CustomerDb.getUserAll();
+    var list = await CustomerDb.loadFromSheets();
     setState(() {
       _customerList = list;
     });
+  }
+
+  void save() async {
+    final snackBar = SnackBar(content: Text('Saving...'));
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+    await CustomerDb.saveAsSheets(_customerList);
   }
 
   @override
@@ -59,8 +115,11 @@ class _WhatsAppHomeState extends State<Home>
     return screen();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   Widget screen() {
     return new Scaffold(
+      key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
       // floatingActionButton: new FloatingActionButton(
@@ -78,7 +137,7 @@ class _WhatsAppHomeState extends State<Home>
     return new AppBar(
       title: new GestureDetector(
         onTap: () {
-          reload();
+          save();
           // MemoDb.delete();
         },
         child: Center(

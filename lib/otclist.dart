@@ -12,29 +12,17 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.price});
+  OtcData({this.name, this.base});
   // 薬名
   String name;
   // 単価
   int price = 1000;
   // 前回記録した個数
-  int base = 5;
+  int base = 0;
   // 今回チェックした個数
   int count = 0;
   // 今回追加した個数
   int add = 0;
-}
-
-/// OTCリストを保持する
-class OtcDb {
-  static Future<List<OtcData>> getOtcAll() async {
-    List<OtcData> result = List<OtcData>();
-    result.add(OtcData(name: 'abc', price: 1000));
-    result.add(OtcData(name: 'def', price: 1100));
-    result.add(OtcData(name: 'abc', price: 1200));
-    result.add(OtcData(name: 'def', price: 1300));
-    return result;
-  }
 }
 
 class _OtcListState extends State<OtcListScreen>
@@ -54,9 +42,9 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   void reload() async {
-    if (customer.otcList == null) {
-      customer.otcList = await OtcDb.getOtcAll();
-    }
+    // if (customer.otcList == null) {
+    //   customer.otcList = await OtcDb.getOtcAll();
+    // }
 
     setState(() {
       _otcList = customer.otcList;
@@ -68,6 +56,8 @@ class _OtcListState extends State<OtcListScreen>
     return screen();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   Widget screen() {
     return new Scaffold(
       key: _scaffoldKey,
@@ -75,8 +65,6 @@ class _OtcListState extends State<OtcListScreen>
       body: body(),
     );
   }
-
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   Widget appBar() {
     return new AppBar(
@@ -624,11 +612,12 @@ class _OtcListState extends State<OtcListScreen>
       }
 
       // 在庫数
-      for (var otc in _otcList) {
-        otc.base = otc.count + otc.add;
-        otc.count = 0;
-        otc.add = 0;
+      for (var i = 0; i < _otcList.length; i++) {
+        _otcList[i].base = _otcList[i].count + _otcList[i].add;
+        _otcList[i].count = 0;
+        _otcList[i].add = 0;
       }
+      customer.otcList = _otcList;
     }
 
     // 請求額

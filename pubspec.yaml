@@ -27,6 +27,8 @@ dependencies:
   cupertino_icons: ^0.1.2
   intl:
   flutter_launcher_icons: 
+  googleapis: any
+  googleapis_auth: any
 
 dev_dependencies:
   flutter_test:
