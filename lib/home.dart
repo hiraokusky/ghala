@@ -13,8 +13,10 @@ class Home extends StatefulWidget {
 
 class CustomerData {
   CustomerData({this.name});
+
   String name;
   List<OtcData> otcList = List<OtcData>();
+  int sale;
   int debt;
   DateTime updated;
 }
@@ -28,10 +30,16 @@ class CustomerDb {
   static Future<void> saveAsSheets(List<CustomerData> list) async {
     int n = 0;
     for (var row in list) {
-      sheet.values.last[++n] = ['A', row.name, 'updated', row.updated.toUtc().toIso8601String()];
+      sheet.values.last[++n] = [
+        'A',
+        row.name,
+        'updated',
+        row.updated.toUtc().toIso8601String()
+      ];
+      sheet.values.last[++n] = ['', '', 'sale', row.sale];
       sheet.values.last[++n] = ['', '', 'debt', row.debt];
       for (var otc in row.otcList) {
-        sheet.values.last[++n] = ['', '', otc.name, otc.base];
+        sheet.values.last[++n] = ['', '', otc.name, otc.base, otc.preuse, otc.preadd];
       }
     }
     print(sheet);
@@ -39,7 +47,7 @@ class CustomerDb {
   }
 
   static Future<List<CustomerData>> loadFromSheets() async {
-    var range = 'A1:D100';
+    var range = 'A1:F100';
     sheet = await Sheets.load(sheetId, range);
     print(sheet.values.last);
 
@@ -68,10 +76,14 @@ class CustomerDb {
 
         if (key == 'updated') {
           user.updated = DateTime.parse(value);
+        } else if (key == 'sale') {
+          user.sale = int.parse(value);
         } else if (key == 'debt') {
           user.debt = int.parse(value);
         } else {
-          var otc = OtcData(name: key, base: int.parse(value));
+          var use = row[i++];
+          var add = row[i++];
+          var otc = OtcData(name: key, base: int.parse(value), preuse: int.parse(use), preadd: int.parse(add));
           user.otcList.add(otc);
         }
       } catch (e) {
@@ -97,17 +109,16 @@ class _WhatsAppHomeState extends State<Home>
     reload();
   }
 
-  void reload() async {
+  Future reload() async {
     var list = await CustomerDb.loadFromSheets();
     setState(() {
       _customerList = list;
     });
   }
 
-  void save() async {
-    final snackBar = SnackBar(content: Text('Saving...'));
-    _scaffoldKey.currentState.showSnackBar(snackBar);
+  Future save() async {
     await CustomerDb.saveAsSheets(_customerList);
+    await reload();
   }
 
   @override
@@ -136,19 +147,24 @@ class _WhatsAppHomeState extends State<Home>
   Widget appBar() {
     return new AppBar(
       title: new GestureDetector(
-        onTap: () {
-          save();
-          // MemoDb.delete();
-        },
+        onTap: () {},
         child: Center(
           child: Text("顧客リスト"),
         ),
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: Icon(Icons.cached),
+          onPressed: () {
+            final snackBar = SnackBar(content: Text('Syncing...'));
+            _scaffoldKey.currentState.showSnackBar(snackBar);
+            save();
+          },
+        ),
+      ],
       elevation: 0.7,
     );
   }
-
-  void _onSwitch(index) async {}
 
   Widget body() {
     int len = _customerList != null ? _customerList.length : 0;
@@ -175,16 +191,14 @@ class _WhatsAppHomeState extends State<Home>
       onTap: () {
         _onTap(i);
       },
-      onLongPress: () {
-        deleteDialog(i);
-      },
+      onLongPress: () {},
       child: new Column(
         children: <Widget>[
           new ListTile(
             // leading: new CircleAvatar(
             //   foregroundColor: Theme.of(context).primaryColor,
             //   backgroundColor: Colors.grey,
-            //   backgroundImage: new NetworkImage(dummyData[i].avatarUrl),
+            //   backgroundImage: new NetworkImage(''),
             // ),
             title: new Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -206,13 +220,6 @@ class _WhatsAppHomeState extends State<Home>
                 ),
               ],
             ),
-            // subtitle: new Container(
-            //   padding: const EdgeInsets.only(top: 5.0),
-            //   child: new Text(
-            //     memo.body,
-            //     style: new TextStyle(color: Colors.grey, fontSize: 10.0),
-            //   ),
-            // ),
           ),
           new Divider(
             height: 10.0,
@@ -228,35 +235,5 @@ class _WhatsAppHomeState extends State<Home>
         MaterialPageRoute(
             builder: (context) =>
                 new OtcListScreen(customer: _customerList[index])));
-  }
-
-  void deleteDialog(int index) async {
-    var result = await showDialog<int>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('確認'),
-          content: Text('削除してもよろしいですか？'),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.of(context).pop(0),
-            ),
-            FlatButton(
-              child: Text('OK'),
-              onPressed: () => Navigator.of(context).pop(1),
-            ),
-          ],
-        );
-      },
-    );
-    print('dialog result: $result');
-    if (result == 1) {
-      // MemoSubjectTable.deleteById(dummyData[index].id);
-      // setState(() {
-      //   dummyData.removeAt(index);
-      // });
-    }
   }
 }

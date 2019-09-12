@@ -12,13 +12,18 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.base});
+  OtcData({this.name, this.base, this.preuse, this.preadd});
+
   // 薬名
   String name;
   // 単価
   int price = 1000;
   // 前回記録した個数
   int base = 0;
+  // 前回使用した個数
+  int preuse = 0;
+  // 前回追加した個数
+  int preadd = 0;
   // 今回チェックした個数
   int count = 0;
   // 今回追加した個数
@@ -607,7 +612,7 @@ class _OtcListState extends State<OtcListScreen>
         caution = true;
       }
     }
-    
+
     if (count) {
       if (caution) {
         final snackBar = SnackBar(content: Text('数えていない商品があります'));
@@ -617,6 +622,8 @@ class _OtcListState extends State<OtcListScreen>
 
       // 在庫数
       for (var i = 0; i < _otcList.length; i++) {
+        _otcList[i].preuse = _otcList[i].base - _otcList[i].count;
+        _otcList[i].preadd = _otcList[i].add;
         _otcList[i].base = _otcList[i].count + _otcList[i].add;
         _otcList[i].count = 0;
         _otcList[i].add = 0;
@@ -627,8 +634,13 @@ class _OtcListState extends State<OtcListScreen>
     // 請求額
     int claim = use + customer.debt;
 
+    // 売上
+    customer.sale += collection;
+
     // 次回請求額
     customer.debt = claim - collection;
+
+    collection = 0;
 
     // 更新日時
     customer.updated = DateTime.now().toUtc();
