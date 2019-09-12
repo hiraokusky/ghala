@@ -597,14 +597,18 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   void _handleDone() {
-    if (use > 0) {
-      // baseがあるのにcountが0ならcaution
-      var caution = false;
-      for (var otc in _otcList) {
-        if (otc.base > 0 && otc.count == 0 && otc.add == 0) {
-          caution = true;
-        }
+    // baseがあるのにcountが0ならcaution
+    var caution = false;
+    var count = false;
+    for (var otc in _otcList) {
+      if (otc.count > 0 || otc.add > 0) {
+        count = true;
+      } else if (otc.base > 0) {
+        caution = true;
       }
+    }
+    
+    if (count) {
       if (caution) {
         final snackBar = SnackBar(content: Text('数えていない商品があります'));
         _scaffoldKey.currentState.showSnackBar(snackBar);
