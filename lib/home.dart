@@ -39,7 +39,7 @@ class CustomerDb {
       sheet.values.last[++n] = ['', '', 'sale', row.sale];
       sheet.values.last[++n] = ['', '', 'debt', row.debt];
       for (var otc in row.otcList) {
-        sheet.values.last[++n] = ['', '', otc.name, otc.base, otc.preuse, otc.preadd];
+        sheet.values.last[++n] = ['', '', otc.name, otc.base, otc.preuse, otc.preadd, otc.useall, otc.addall];
       }
     }
     print(sheet);
@@ -47,7 +47,7 @@ class CustomerDb {
   }
 
   static Future<List<CustomerData>> loadFromSheets() async {
-    var range = 'A1:F100';
+    var range = 'A1:H100';
     sheet = await Sheets.load(sheetId, range);
     print(sheet.values.last);
 
@@ -83,7 +83,9 @@ class CustomerDb {
         } else {
           var use = row[i++];
           var add = row[i++];
-          var otc = OtcData(name: key, base: int.parse(value), preuse: int.parse(use), preadd: int.parse(add));
+          var useall = row[i++];
+          var addall = row[i++];
+          var otc = OtcData(name: key, base: int.parse(value), preuse: int.parse(use), preadd: int.parse(add), useall: int.parse(useall), addall: int.parse(addall));
           user.otcList.add(otc);
         }
       } catch (e) {

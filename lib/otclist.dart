@@ -12,7 +12,7 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.base, this.preuse, this.preadd});
+  OtcData({this.name, this.base, this.preuse, this.preadd, this.useall, this.addall});
 
   // 薬名
   String name;
@@ -24,6 +24,10 @@ class OtcData {
   int preuse = 0;
   // 前回追加した個数
   int preadd = 0;
+  // 使用した個数
+  int useall = 0;
+  // 追加した個数
+  int addall = 0;
   // 今回チェックした個数
   int count = 0;
   // 今回追加した個数
@@ -624,6 +628,8 @@ class _OtcListState extends State<OtcListScreen>
       for (var i = 0; i < _otcList.length; i++) {
         _otcList[i].preuse = _otcList[i].base - _otcList[i].count;
         _otcList[i].preadd = _otcList[i].add;
+        _otcList[i].useall += _otcList[i].preuse;
+        _otcList[i].addall += _otcList[i].preadd;
         _otcList[i].base = _otcList[i].count + _otcList[i].add;
         _otcList[i].count = 0;
         _otcList[i].add = 0;
