@@ -12,12 +12,12 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.base, this.preuse, this.preadd, this.useall, this.addall});
+  OtcData({this.name, this.price, this.base, this.preuse, this.preadd, this.useall, this.addall});
 
   // 薬名
   String name;
   // 単価
-  int price = 1000;
+  int price = 0;
   // 前回記録した個数
   int base = 0;
   // 前回使用した個数
