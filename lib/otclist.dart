@@ -85,6 +85,7 @@ class _OtcListState extends State<OtcListScreen>
 
   Widget screen() {
     return new Scaffold(
+      // resizeToAvoidBottomPadding: false,
       key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
@@ -159,7 +160,7 @@ class _OtcListState extends State<OtcListScreen>
       ),
       new Divider(height: 1.0),
       _buildBottomButton(),
-      _buildBottomButton2(true)
+      _buildBottomButton2('Back', true)
     ]);
   }
 
@@ -316,7 +317,7 @@ class _OtcListState extends State<OtcListScreen>
 
   // 画像ファイルを取得する
   Widget _loadImage(String name) {
-    return Image.asset("assets/mdb/noimage.png");
+    return Image.asset("assets/mdb/noimage.png", height:100);
   }
 
   Widget _label(String label) {
@@ -337,7 +338,7 @@ class _OtcListState extends State<OtcListScreen>
         ));
   }
 
-  _buildBottomButton2(root) {
+  _buildBottomButton2(back, root) {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 50.0,
@@ -369,7 +370,7 @@ class _OtcListState extends State<OtcListScreen>
                       width: 4.0,
                     ),
                     Text(
-                      "Back",
+                      back,
                       style: TextStyle(color: Colors.white),
                     ),
                   ],
@@ -421,47 +422,80 @@ class _OtcListState extends State<OtcListScreen>
 
   // OTC確認画面
   Widget _otc(otc) {
-    return new Column(children: <Widget>[
+    var list = List<Widget>();
+    list.add(Padding(
+      padding: EdgeInsets.all(10.0),
+      child: _loadImage(''),
+    ));
+    list.add(Padding(
+      padding: EdgeInsets.all(20.0),
+      child: new Text(
+        otc.name,
+        style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+      ),
+    ));
+    list.add(_show('残り', otc, _textController1, _handleSubmitted1));
+    list.add(_show('追加', otc, _textController2, _handleSubmitted2));
+    list.add(Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        _label('合計'),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+      ],
+    ));
+    return
+        new Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
       new Flexible(
         child: new ListView.builder(
           physics: BouncingScrollPhysics(),
           reverse: false,
-          itemCount: 0,
-          itemBuilder: (context, i) => _buildCustomerItem(i),
+          itemCount: list.length,
+          itemBuilder: (context, i) => list[i],
         ),
       ),
       // Padding(
       //   padding: EdgeInsets.all(10.0),
       //   child: _loadImage(''),
       // ),
-      Padding(
-        padding: EdgeInsets.all(20.0),
-        child: new Text(
-          otc.name,
-          style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-        ),
-      ),
-      _show('残り', otc, _textController1, _handleSubmitted1),
-      _show('追加', otc, _textController2, _handleSubmitted2),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: EdgeInsets.all(8.0),
-          ),
-          _label('合計'),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-          ),
-          _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-          ),
-        ],
-      ),
+      // Padding(
+      //   padding: EdgeInsets.all(20.0),
+      //   child: new Text(
+      //     otc.name,
+      //     style:
+      //         new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+      //   ),
+      // ),
+      // _show('残り', otc, _textController1, _handleSubmitted1),
+      // _show('追加', otc, _textController2, _handleSubmitted2),
+      // Row(
+      //   mainAxisAlignment: MainAxisAlignment.end,
+      //   crossAxisAlignment: CrossAxisAlignment.center,
+      //   children: <Widget>[
+      //     Padding(
+      //       padding: EdgeInsets.all(8.0),
+      //     ),
+      //     _label('合計'),
+      //     Padding(
+      //       padding: EdgeInsets.all(8.0),
+      //     ),
+      //     _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
+      //     Padding(
+      //       padding: EdgeInsets.all(8.0),
+      //     ),
+      //   ],
+      // ),
       _buildBottomButton(),
-      _buildBottomButton2(false),
+      _buildBottomButton2('List', false),
     ]);
   }
 
