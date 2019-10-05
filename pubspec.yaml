@@ -29,6 +29,8 @@ dependencies:
   flutter_launcher_icons: 
   googleapis: any
   googleapis_auth: any
+  barcode_scan:
+  # image_picker:
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,9 @@
+import 'dart:async';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:ghala/home.dart';
-import 'package:intl/intl.dart';
+import 'package:ghala/ringup.dart';
+import 'package:flutter/services.dart';
 
 class OtcListScreen extends StatefulWidget {
   OtcListScreen({this.customer});
@@ -12,10 +15,23 @@ class OtcListScreen extends StatefulWidget {
 }
 
 class OtcData {
-  OtcData({this.name, this.price, this.base, this.preuse, this.preadd, this.useall, this.addall});
+  OtcData(
+      {this.key,
+      this.name,
+      this.code,
+      this.price,
+      this.base,
+      this.preuse,
+      this.preadd,
+      this.useall,
+      this.addall});
 
   // 薬名
+  String key;
+  // 薬名
   String name;
+  // コード
+  String code = '';
   // 単価
   int price = 0;
   // 前回記録した個数
@@ -72,7 +88,38 @@ class _OtcListState extends State<OtcListScreen>
       key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
+      // floatingActionButton: new FloatingActionButton(
+      //   backgroundColor: Theme.of(context).accentColor,
+      //   child: new Icon(
+      //     Icons.note_add,
+      //     color: Colors.white,
+      //   ),
+      //   onPressed: barcodeScanning,
+      // ),
     );
+  }
+
+  String barcode = "";
+
+// Method for scanning barcode....
+  Future barcodeScanning() async {
+    try {
+      String barcode = await BarcodeScanner.scan();
+      _setBarcode(barcode);
+      // _handleItem();
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.CameraAccessDenied) {
+        setState(() {
+          this.barcode = 'No camera permission!';
+        });
+      } else {
+        setState(() => this.barcode = 'Unknown error: $e');
+      }
+    } on FormatException {
+      setState(() => this.barcode = 'Nothing captured.');
+    } catch (e) {
+      setState(() => this.barcode = 'Unknown error: $e');
+    }
   }
 
   Widget appBar() {
@@ -88,10 +135,20 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   Widget body() {
+    if (barcode != "") {
+      for (int i = 0; i < _otcList.length; i++) {
+        var otc = _otcList[i];
+        if (otc.code == barcode) {
+          return _otc(otc);
+        }
+      }
+    }
+
     if (_otcList == null) {
       _otcList = List<OtcData>();
     }
     return new Column(children: <Widget>[
+      Text(barcode),
       new Flexible(
         child: new ListView.builder(
           physics: BouncingScrollPhysics(),
@@ -101,21 +158,111 @@ class _OtcListState extends State<OtcListScreen>
         ),
       ),
       new Divider(height: 1.0),
-      _buildBottomNavigationBar(),
       _buildBottomButton(),
+      _buildBottomButton2(true)
     ]);
+  }
+
+  _setBarcode(barcode) {
+    for (int i = 0; i < _otcList.length; i++) {
+      var otc = _otcList[i];
+      if (otc.code == barcode) {
+        _textController1.text = otc.count.toString();
+        _textController2.text = otc.add.toString();
+        setState(() => this.barcode = barcode);
+        break;
+      }
+    }
   }
 
   Widget _buildCustomerItem(int i) {
     var otc = _otcList[i];
-    return newResultItem(otc);
+    // return newResultItem(otc);
+    // OTC薬のリンクを表示する
+    return Padding(
+      padding: new EdgeInsets.all(4.0),
+      child: OutlineButton(
+        // borderSide: BorderSide(width: 1.0, color: Colors.black),
+        // shape: new RoundedRectangleBorder(
+        //     borderRadius: new BorderRadius.circular(0.0)),
+        padding: EdgeInsets.only(top: 4.0, right: 4.0, bottom: 0.0, left: 4.0),
+        child: new Column(
+          children: <Widget>[
+            new ListTile(
+              // leading: new CircleAvatar(
+              //   foregroundColor: Theme.of(context).primaryColor,
+              //   backgroundColor: Colors.grey,
+              //   backgroundImage: new NetworkImage(''),
+              // ),
+              title: new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  new Text(
+                    otc.name,
+                    style: new TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
+                  ),
+                  new Text(
+                    'count: ' + otc.count.toString(),
+                    style: new TextStyle(color: Colors.black, fontSize: 16.0),
+                  ),
+                  new Text(
+                    'add: ' + otc.add.toString(),
+                    style: new TextStyle(color: Colors.black, fontSize: 16.0),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        onPressed: () {
+          _setBarcode(otc.code);
+          // _handleItem();
+        },
+      ),
+    );
   }
 
-  void _onTap(int index) async {
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (context) => new MemoScreen(_root, dummyData, index)));
+  _buildBottomButton() {
+    return Padding(
+      padding: new EdgeInsets.all(10.0),
+      child: Container(
+        width: MediaQuery.of(context).size.width,
+        height: 100.0,
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Flexible(
+              fit: FlexFit.tight,
+              flex: 2,
+              child: RaisedButton(
+                onPressed: barcodeScanning,
+                color: Colors.blue,
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Icon(
+                        Icons.camera,
+                        color: Colors.white,
+                      ),
+                      SizedBox(
+                        width: 4.0,
+                      ),
+                      Text(
+                        "Scan",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   // OTC薬のリンクを表示する
@@ -157,8 +304,8 @@ class _OtcListState extends State<OtcListScreen>
                   ),
                 ),
               ),
-              _buildButton1(otc),
-              _buildButton2(otc),
+              // _buildButton1(otc),
+              // _buildButton2(otc),
             ],
           ),
           onPressed: () async {
@@ -167,195 +314,16 @@ class _OtcListState extends State<OtcListScreen>
         ));
   }
 
-  Widget _buildButton1(OtcData otc) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        label('残り'),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        getChip(otc.count.toString() + "/" + otc.base.toString(), Colors.black),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        Flexible(
-          fit: FlexFit.tight,
-          flex: 1,
-          child: RaisedButton(
-            onPressed: () async {
-              _count(otc, -1);
-            },
-            color: Colors.lightBlue,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Icon(
-                  //   Icons.min,
-                  //   color: Colors.white,
-                  // ),
-                  SizedBox(
-                    width: 4.0,
-                  ),
-                  Text(
-                    "-",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        Flexible(
-          flex: 1,
-          child: RaisedButton(
-            onPressed: () async {
-              _count(otc, 1);
-            },
-            color: Colors.green,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Icon(
-                  //   Icons.arrow_back,
-                  //   color: Colors.white,
-                  // ),
-                  SizedBox(
-                    width: 4.0,
-                  ),
-                  Text(
-                    "+",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-      ],
-    );
+  // 画像ファイルを取得する
+  Widget _loadImage(String name) {
+    return Image.asset("assets/mdb/noimage.png");
   }
 
-  Widget _buildButton2(OtcData otc) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        label('追加'),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        getChip(otc.add.toString() + "/" + (otc.count + otc.add).toString(),
-            Colors.black),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        Flexible(
-          fit: FlexFit.tight,
-          flex: 1,
-          child: RaisedButton(
-            onPressed: () async {
-              _add(otc, -1);
-            },
-            color: Colors.lightBlue,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Icon(
-                  //   Icons.min,
-                  //   color: Colors.white,
-                  // ),
-                  SizedBox(
-                    width: 4.0,
-                  ),
-                  Text(
-                    "-",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-        Flexible(
-          flex: 1,
-          child: RaisedButton(
-            onPressed: () async {
-              _add(otc, 1);
-            },
-            color: Colors.green,
-            child: Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // Icon(
-                  //   Icons.arrow_back,
-                  //   color: Colors.white,
-                  // ),
-                  SizedBox(
-                    width: 4.0,
-                  ),
-                  Text(
-                    "+",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.all(8.0),
-        ),
-      ],
-    );
-  }
-
-  void _count(OtcData otc, int i) {
-    if (i < 0 && otc.count == 0) {
-      i = 0;
-    }
-    if (i > 0 && otc.base < otc.count + i) {
-      i = 0;
-    }
-    setState(() {
-      otc.count += i;
-    });
-  }
-
-  void _add(OtcData otc, int i) {
-    if (i < 0 && otc.add == 0) {
-      i = 0;
-    }
-    setState(() {
-      otc.add += i;
-    });
-  }
-
-  Widget label(String label) {
+  Widget _label(String label) {
     return Text(label, style: TextStyle(color: Colors.black, fontSize: 20.0));
   }
 
-  Widget labelColor(String label, Color color) {
+  Widget _labelColor(String label, Color color) {
     return Text(label, style: TextStyle(color: color, fontSize: 20.0));
   }
 
@@ -369,174 +337,7 @@ class _OtcListState extends State<OtcListScreen>
         ));
   }
 
-  // 画像ファイルを取得する
-  Widget _loadImage(String name) {
-    return Image.asset("assets/mdb/noimage.png");
-  }
-
-  // 利用額
-  int use = 0;
-
-  // 集金額
-  int collection = 0;
-
-  // 価格
-  _buildBottomNavigationBar() {
-    // 利用額
-    use = 0;
-    int sum = 0;
-    for (var otc in _otcList) {
-      sum += otc.count;
-      var n = otc.base - otc.count;
-      if (n > 0) {
-        use += n * otc.price;
-      }
-    }
-    // 未入力なら
-    if (sum == 0) {
-      use = 0;
-    }
-
-    // 負債額
-    int debt = customer.debt;
-
-    // 請求額
-    int claim = use + debt;
-
-    // 次回請求額
-    int next = claim - collection;
-
-    return Container(
-        width: MediaQuery.of(context).size.width,
-        // height: 85.0,
-        child: Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                label('利用額'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                labelColor(use > 0 ? use.toString() : "-", Colors.red[300]),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                label('未払い金'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                labelColor(debt.toString(), Colors.red[300]),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                label('請求額'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                labelColor(claim.toString(), Colors.red[300]),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                label('集金額'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                _buildTextComposer(),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                label('残未払い金'),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                labelColor(next.toString(), Colors.red[300]),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-              ],
-            ),
-          ],
-        ));
-  }
-
-  final TextEditingController _textController = new TextEditingController();
-  bool _isComposing = false;
-
-  // 自由入力フィールド
-  Widget _buildTextComposer() {
-    return Flexible(
-      child: Padding(
-        padding: EdgeInsets.all(4.0),
-        child: OutlineButton(
-          borderSide: BorderSide(width: 1.0, color: Colors.grey),
-          shape: new RoundedRectangleBorder(
-              borderRadius: new BorderRadius.circular(10.0)),
-          padding: new EdgeInsets.all(10.0),
-          child: new TextField(
-            keyboardType: TextInputType.number,
-            controller: _textController,
-            onChanged: (String text) {
-              setState(() {
-                _isComposing = text.length > 0;
-              });
-            },
-            onSubmitted: _isComposing ? _handleSubmitted : null,
-            decoration: new InputDecoration.collapsed(hintText: "集金額を入力してください"),
-          ),
-          onPressed: () async {},
-        ),
-      ),
-    );
-  }
-
-  // 送信したテキストでシナリオを実行する
-  void _handleSubmitted(String text) {
-    // _textController.clear();
-    collection = int.parse(text);
-  }
-
-  _buildBottomButton() {
+  _buildBottomButton2(root) {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: 50.0,
@@ -549,7 +350,11 @@ class _OtcListState extends State<OtcListScreen>
             flex: 1,
             child: RaisedButton(
               onPressed: () async {
-                Navigator.pop(context, false);
+                if (root) {
+                  Navigator.pop(context, false);
+                } else {
+                  setState(() => this.barcode = '');
+                }
               },
               color: Colors.grey,
               child: Center(
@@ -579,7 +384,7 @@ class _OtcListState extends State<OtcListScreen>
               onPressed: () async {
                 _handleDone();
               },
-              color: Colors.blue,
+              color: Colors.pink,
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -592,7 +397,7 @@ class _OtcListState extends State<OtcListScreen>
                       width: 4.0,
                     ),
                     Text(
-                      "Done",
+                      "集金",
                       style: TextStyle(color: Colors.white),
                     ),
                   ],
@@ -606,51 +411,117 @@ class _OtcListState extends State<OtcListScreen>
   }
 
   void _handleDone() {
-    // baseがあるのにcountが0ならcaution
-    var caution = false;
-    var count = false;
-    for (var otc in _otcList) {
-      if (otc.count > 0 || otc.add > 0) {
-        count = true;
-      } else if (otc.base > 0) {
-        caution = true;
-      }
-    }
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => new RingupScreen(customer: customer)));
+  }
 
-    if (count) {
-      if (caution) {
-        final snackBar = SnackBar(content: Text('数えていない商品があります'));
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-        return;
-      }
+  ////////////////////////////////////////////////////////
 
-      // 在庫数
-      for (var i = 0; i < _otcList.length; i++) {
-        _otcList[i].preuse = _otcList[i].base - _otcList[i].count;
-        _otcList[i].preadd = _otcList[i].add;
-        _otcList[i].useall += _otcList[i].preuse;
-        _otcList[i].addall += _otcList[i].preadd;
-        _otcList[i].base = _otcList[i].count + _otcList[i].add;
-        _otcList[i].count = 0;
-        _otcList[i].add = 0;
-      }
-      customer.otcList = _otcList;
-    }
+  // OTC確認画面
+  Widget _otc(otc) {
+    return new Column(children: <Widget>[
+      new Flexible(
+        child: new ListView.builder(
+          physics: BouncingScrollPhysics(),
+          reverse: false,
+          itemCount: 0,
+          itemBuilder: (context, i) => _buildCustomerItem(i),
+        ),
+      ),
+      // Padding(
+      //   padding: EdgeInsets.all(10.0),
+      //   child: _loadImage(''),
+      // ),
+      Padding(
+        padding: EdgeInsets.all(20.0),
+        child: new Text(
+          otc.name,
+          style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+        ),
+      ),
+      _show('残り', otc, _textController1, _handleSubmitted1),
+      _show('追加', otc, _textController2, _handleSubmitted2),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.all(8.0),
+          ),
+          _label('合計'),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+          ),
+          _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
+          Padding(
+            padding: EdgeInsets.all(8.0),
+          ),
+        ],
+      ),
+      _buildBottomButton(),
+      _buildBottomButton2(false),
+    ]);
+  }
 
-    // 請求額
-    int claim = use + customer.debt;
+  final TextEditingController _textController1 = new TextEditingController();
 
-    // 売上
-    customer.sale += collection;
+  // 送信したテキストでシナリオを実行する
+  void _handleSubmitted1(otc, String text) {
+    otc.count = int.parse(text);
+  }
 
-    // 次回請求額
-    customer.debt = claim - collection;
+  final TextEditingController _textController2 = new TextEditingController();
 
-    collection = 0;
+  // 送信したテキストでシナリオを実行する
+  void _handleSubmitted2(otc, String text) {
+    otc.add = int.parse(text);
+  }
 
-    // 更新日時
-    customer.updated = DateTime.now().toUtc();
+  Widget _show(label, otc, textController, handleSubmitted) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        _label(label),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+        _buildTextComposer("", otc, textController, handleSubmitted),
+        Padding(
+          padding: EdgeInsets.all(8.0),
+        ),
+      ],
+    );
+  }
 
-    Navigator.pop(context, false);
+  // 自由入力フィールド
+  Widget _buildTextComposer(label, otc, textController, handleSubmitted) {
+    return Flexible(
+      child: Padding(
+        padding: EdgeInsets.all(4.0),
+        child: OutlineButton(
+          borderSide: BorderSide(width: 1.0, color: Colors.grey),
+          shape: new RoundedRectangleBorder(
+              borderRadius: new BorderRadius.circular(10.0)),
+          padding: new EdgeInsets.all(10.0),
+          child: new TextField(
+            keyboardType: TextInputType.number,
+            controller: textController,
+            // onChanged: (String text) {
+            //   _isComposing = text.length > 0;
+            // },
+            // onSubmitted: _isComposing ? handleSubmitted : null,
+            onSubmitted: (t) => handleSubmitted(otc, t),
+            decoration: new InputDecoration.collapsed(hintText: label),
+          ),
+          onPressed: () async {},
+        ),
+      ),
+    );
   }
 }

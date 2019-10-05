@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ghala/googlesheets.dart';
 import 'package:ghala/otclist.dart';
 import 'package:ghala/secret.dart';
+import 'package:ghala/sheet.dart';
 import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
@@ -21,84 +22,6 @@ class CustomerData {
   DateTime updated;
 }
 
-/// ユーザーリストを保持する
-/// このリストを選択して、ユーザーごとに配置している薬リストを表示する。
-class CustomerDb {
-  static var sheetId = Secret.sheetId;
-  static var sheet = Map<String, dynamic>();
-
-  static Future<void> saveAsSheets(List<CustomerData> list) async {
-    int n = 0;
-    for (var row in list) {
-      sheet.values.last[++n] = [
-        'A',
-        row.name,
-        'updated',
-        row.updated.toUtc().toIso8601String()
-      ];
-      sheet.values.last[++n] = ['', '', 'sale', row.sale];
-      sheet.values.last[++n] = ['', '', 'debt', row.debt];
-      for (var otc in row.otcList) {
-        sheet.values.last[++n] = ['', '', otc.name, otc.price, otc.base, otc.preuse, otc.preadd, otc.useall, otc.addall];
-      }
-    }
-    print(sheet);
-    await Sheets.save(sheetId, sheet);
-  }
-
-  static Future<List<CustomerData>> loadFromSheets() async {
-    var range = 'A1:I1000';
-    sheet = await Sheets.load(sheetId, range);
-    print(sheet.values.last);
-
-    List<CustomerData> result = List<CustomerData>();
-    int n = 0;
-    var customer = '';
-    CustomerData user = null;
-    for (var row in sheet.values.last) {
-      n++;
-      if (n == 1) {
-        continue;
-      }
-      var i = 0;
-      try {
-        var staff = row[i++];
-        String name = row[i++];
-        if (name.length > 0) {
-          if (user != null) {
-            result.add(user);
-          }
-          customer = name;
-          user = CustomerData(name: name);
-        }
-        var key = row[i++];
-        var value = row[i++];
-
-        if (key == 'updated') {
-          user.updated = DateTime.parse(value);
-        } else if (key == 'sale') {
-          user.sale = int.parse(value);
-        } else if (key == 'debt') {
-          user.debt = int.parse(value);
-        } else {
-          var count = row[i++];
-          var use = row[i++];
-          var add = row[i++];
-          var useall = row[i++];
-          var addall = row[i++];
-          var otc = OtcData(name: key, price: int.parse(value), base: int.parse(count), preuse: int.parse(use), preadd: int.parse(add), useall: int.parse(useall), addall: int.parse(addall));
-          user.otcList.add(otc);
-        }
-      } catch (e) {
-        print(e);
-        continue;
-      }
-    }
-    result.add(user);
-    return result;
-  }
-}
-
 class _WhatsAppHomeState extends State<Home>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
@@ -112,13 +35,16 @@ class _WhatsAppHomeState extends State<Home>
     reload();
   }
 
+  // Google sheetからデータをロード
   Future reload() async {
-    var list = await CustomerDb.loadFromSheets();
+    var items = await CustomerDb.loadItemFromSheets();
+    var list = await CustomerDb.loadFromSheets('Sophia', items);
     setState(() {
       _customerList = list;
     });
   }
 
+  // Google sheetへデータをセーブ
   Future save() async {
     await CustomerDb.saveAsSheets(_customerList);
     await reload();
@@ -136,14 +62,6 @@ class _WhatsAppHomeState extends State<Home>
       key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
-      // floatingActionButton: new FloatingActionButton(
-      //   backgroundColor: Theme.of(context).accentColor,
-      //   child: new Icon(
-      //     Icons.note_add,
-      //     color: Colors.white,
-      //   ),
-      //   onPressed: () => _onTap(-1),
-      // ),
     );
   }
 
@@ -232,11 +150,11 @@ class _WhatsAppHomeState extends State<Home>
     );
   }
 
-  void _onTap(int index) async {
+  void _onTap(int index) async {    
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) =>
+            builder: (context) => 
                 new OtcListScreen(customer: _customerList[index])));
   }
 }
