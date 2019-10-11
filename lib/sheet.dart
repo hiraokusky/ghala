@@ -1,7 +1,7 @@
-import 'package:ghala/googlesheets.dart';
 import 'package:ghala/home.dart';
 import 'package:ghala/otclist.dart';
 import 'package:ghala/secret.dart';
+import 'package:ghala/sl/googlesheets.dart';
 
 /// ユーザーリストを保持する
 /// このリストを選択して、ユーザーごとに配置している薬リストを表示する。
@@ -25,7 +25,7 @@ class CustomerDb {
         sheet.values.last[++n] = [
           '',
           '',
-          otc.name,
+          otc.key,
           otc.price,
           otc.base,
           otc.preuse,
@@ -43,6 +43,9 @@ class CustomerDb {
   static Future<List<CustomerData>> loadFromSheets(String staffname, Map<String, ItemData> items) async {
     var range = staffname + '!A1:I1000';
     sheet = await Sheets.load(sheetId, range);
+    if (sheet == null) {
+      return null;
+    }
     print(sheet.values.last);
 
     List<CustomerData> result = List<CustomerData>();

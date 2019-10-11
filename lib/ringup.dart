@@ -37,7 +37,7 @@ class _RingupState extends State<RingupScreen>
   Widget screen() {
     return new Scaffold(
       key: _scaffoldKey,
-      appBar: appBar(),
+      // appBar: appBar(),
       body: body(),
     );
   }
@@ -56,6 +56,11 @@ class _RingupState extends State<RingupScreen>
 
   Widget body() {
     return new Column(children: <Widget>[
+      SizedBox(height: 50),
+      new Text(
+        "Details",
+        style: new TextStyle(color: Colors.black, fontSize: 16.0),
+      ),
       new Flexible(
         child: new ListView.builder(
           physics: BouncingScrollPhysics(),
@@ -94,14 +99,17 @@ class _RingupState extends State<RingupScreen>
                 children: <Widget>[
                   new Text(
                     otc.name,
-                    style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                    style: new TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16.0),
                   ),
                   new Text(
                     otc.price.toString(),
                     style: new TextStyle(color: Colors.pink, fontSize: 16.0),
                   ),
                   new Text(
-                    'use: ' + (otc.base - otc.count).toString() + (otc.count == 0 ? ' (count 0)' : ''),
+                    'use: ' +
+                        (otc.base - otc.count).toString() +
+                        (otc.count == 0 ? ' (count 0)' : ''),
                     style: new TextStyle(color: Colors.black, fontSize: 16.0),
                   ),
                 ],
@@ -109,8 +117,7 @@ class _RingupState extends State<RingupScreen>
             ),
           ],
         ),
-        onPressed: () {
-        },
+        onPressed: () {},
       ),
     );
   }
@@ -183,11 +190,12 @@ class _RingupState extends State<RingupScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                label('利用額'),
+                label('Usage'),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                labelColor(use > 0 ? use.toString() : "         ", Colors.red[300]),
+                labelColor(
+                    use > 0 ? use.toString() : "         ", Colors.red[300]),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -200,7 +208,7 @@ class _RingupState extends State<RingupScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                label('未払い金'),
+                label('Accounts payable'),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -217,7 +225,7 @@ class _RingupState extends State<RingupScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                label('請求額'),
+                label('Billing'),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -234,7 +242,7 @@ class _RingupState extends State<RingupScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                label('集金額'),
+                label('Collection'),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -251,7 +259,7 @@ class _RingupState extends State<RingupScreen>
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
-                label('残未払い金'),
+                label('Remaining'),
                 Padding(
                   padding: EdgeInsets.all(8.0),
                 ),
@@ -266,7 +274,6 @@ class _RingupState extends State<RingupScreen>
   }
 
   final TextEditingController _textController = new TextEditingController();
-  bool _isComposing = false;
 
   // 自由入力フィールド
   Widget _buildTextComposer() {
@@ -281,13 +288,13 @@ class _RingupState extends State<RingupScreen>
           child: new TextField(
             keyboardType: TextInputType.number,
             controller: _textController,
-            onChanged: (String text) {
-              setState(() {
-                _isComposing = text.length > 0;
-              });
+            onChanged: (String t) {
+              if (t.length > 0) {
+                _handleSubmitted(t);
+              }
             },
-            onSubmitted: _isComposing ? _handleSubmitted : null,
-            decoration: new InputDecoration.collapsed(hintText: "集金額を入力してください"),
+            onSubmitted: _handleSubmitted,
+            decoration: new InputDecoration.collapsed(hintText: ""),
           ),
           onPressed: () async {},
         ),
@@ -384,7 +391,7 @@ class _RingupState extends State<RingupScreen>
 
     if (count) {
       if (caution) {
-        final snackBar = SnackBar(content: Text('数えていない商品があります'));
+        final snackBar = SnackBar(content: Text('There are some items that are not counted.'));
         _scaffoldKey.currentState.showSnackBar(snackBar);
         return;
       }

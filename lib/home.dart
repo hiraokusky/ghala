@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ghala/googlesheets.dart';
 import 'package:ghala/otclist.dart';
+import 'package:ghala/profile/drawer.dart';
+import 'package:ghala/profile/signin.dart';
 import 'package:ghala/secret.dart';
 import 'package:ghala/sheet.dart';
 import 'package:intl/intl.dart';
@@ -37,8 +38,9 @@ class _WhatsAppHomeState extends State<Home>
 
   // Google sheetからデータをロード
   Future reload() async {
+    print(userName);
     var items = await CustomerDb.loadItemFromSheets();
-    var list = await CustomerDb.loadFromSheets('Sophia', items);
+    var list = await CustomerDb.loadFromSheets(userName, items);
     setState(() {
       _customerList = list;
     });
@@ -46,8 +48,10 @@ class _WhatsAppHomeState extends State<Home>
 
   // Google sheetへデータをセーブ
   Future save() async {
-    await CustomerDb.saveAsSheets(_customerList);
-    await reload();
+    if (_customerList != null) {
+      await CustomerDb.saveAsSheets(_customerList);
+      await reload();
+    }
   }
 
   @override
@@ -62,6 +66,7 @@ class _WhatsAppHomeState extends State<Home>
       key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
+      drawer: AppDrawer.showDrawer(context),
     );
   }
 
@@ -70,14 +75,14 @@ class _WhatsAppHomeState extends State<Home>
       title: new GestureDetector(
         onTap: () {},
         child: Center(
-          child: Text("顧客リスト"),
+          child: Text("Customers"),
         ),
       ),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.cached),
+          icon: Icon(Icons.file_upload),
           onPressed: () {
-            final snackBar = SnackBar(content: Text('Syncing...'));
+            final snackBar = SnackBar(content: Text('Uploading...'));
             _scaffoldKey.currentState.showSnackBar(snackBar);
             save();
           },
@@ -88,6 +93,9 @@ class _WhatsAppHomeState extends State<Home>
   }
 
   Widget body() {
+    if (_customerList == null) {
+      return Text('No user data: ' + userName);
+    }
     int len = _customerList != null ? _customerList.length : 0;
     return new Column(children: <Widget>[
       new Flexible(
@@ -150,11 +158,11 @@ class _WhatsAppHomeState extends State<Home>
     );
   }
 
-  void _onTap(int index) async {    
+  void _onTap(int index) async {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => 
+            builder: (context) =>
                 new OtcListScreen(customer: _customerList[index])));
   }
 }

@@ -171,9 +171,10 @@ class _OtcListState extends State<OtcListScreen>
         _textController1.text = otc.count.toString();
         _textController2.text = otc.add.toString();
         setState(() => this.barcode = barcode);
-        break;
+        return;
       }
     }
+    setState(() => this.barcode = '');
   }
 
   Widget _buildCustomerItem(int i) {
@@ -213,6 +214,7 @@ class _OtcListState extends State<OtcListScreen>
                   ),
                 ],
               ),
+              subtitle: Text(otc.base.toString()),
             ),
           ],
         ),
@@ -317,7 +319,7 @@ class _OtcListState extends State<OtcListScreen>
 
   // 画像ファイルを取得する
   Widget _loadImage(String name) {
-    return Image.asset("assets/mdb/noimage.png", height:100);
+    return Image.asset("assets/mdb/noimage.png", height: 100);
   }
 
   Widget _label(String label) {
@@ -398,7 +400,7 @@ class _OtcListState extends State<OtcListScreen>
                       width: 4.0,
                     ),
                     Text(
-                      "集金",
+                      "Collect monery",
                       style: TextStyle(color: Colors.white),
                     ),
                   ],
@@ -434,8 +436,9 @@ class _OtcListState extends State<OtcListScreen>
         style: new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
       ),
     ));
-    list.add(_show('残り', otc, _textController1, _handleSubmitted1));
-    list.add(_show('追加', otc, _textController2, _handleSubmitted2));
+    list.add(_show('Remaining', otc, _textController1, _handleSubmitted1));
+    list.add(
+        _show('Add            ', otc, _textController2, _handleSubmitted2));
     list.add(Row(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -443,7 +446,7 @@ class _OtcListState extends State<OtcListScreen>
         Padding(
           padding: EdgeInsets.all(8.0),
         ),
-        _label('合計'),
+        _label('Total'),
         Padding(
           padding: EdgeInsets.all(8.0),
         ),
@@ -453,50 +456,51 @@ class _OtcListState extends State<OtcListScreen>
         ),
       ],
     ));
-    return
-        new Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
-      new Flexible(
-        child: new ListView.builder(
-          physics: BouncingScrollPhysics(),
-          reverse: false,
-          itemCount: list.length,
-          itemBuilder: (context, i) => list[i],
-        ),
-      ),
-      // Padding(
-      //   padding: EdgeInsets.all(10.0),
-      //   child: _loadImage(''),
-      // ),
-      // Padding(
-      //   padding: EdgeInsets.all(20.0),
-      //   child: new Text(
-      //     otc.name,
-      //     style:
-      //         new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
-      //   ),
-      // ),
-      // _show('残り', otc, _textController1, _handleSubmitted1),
-      // _show('追加', otc, _textController2, _handleSubmitted2),
-      // Row(
-      //   mainAxisAlignment: MainAxisAlignment.end,
-      //   crossAxisAlignment: CrossAxisAlignment.center,
-      //   children: <Widget>[
-      //     Padding(
-      //       padding: EdgeInsets.all(8.0),
-      //     ),
-      //     _label('合計'),
-      //     Padding(
-      //       padding: EdgeInsets.all(8.0),
-      //     ),
-      //     _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
-      //     Padding(
-      //       padding: EdgeInsets.all(8.0),
-      //     ),
-      //   ],
-      // ),
-      _buildBottomButton(),
-      _buildBottomButton2('List', false),
-    ]);
+    return new Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          new Flexible(
+            child: new ListView.builder(
+              physics: BouncingScrollPhysics(),
+              reverse: false,
+              itemCount: list.length,
+              itemBuilder: (context, i) => list[i],
+            ),
+          ),
+          // Padding(
+          //   padding: EdgeInsets.all(10.0),
+          //   child: _loadImage(''),
+          // ),
+          // Padding(
+          //   padding: EdgeInsets.all(20.0),
+          //   child: new Text(
+          //     otc.name,
+          //     style:
+          //         new TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
+          //   ),
+          // ),
+          // _show('残り', otc, _textController1, _handleSubmitted1),
+          // _show('追加', otc, _textController2, _handleSubmitted2),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.end,
+          //   crossAxisAlignment: CrossAxisAlignment.center,
+          //   children: <Widget>[
+          //     Padding(
+          //       padding: EdgeInsets.all(8.0),
+          //     ),
+          //     _label('合計'),
+          //     Padding(
+          //       padding: EdgeInsets.all(8.0),
+          //     ),
+          //     _labelColor((otc.count + otc.add).toString(), Colors.red[300]),
+          //     Padding(
+          //       padding: EdgeInsets.all(8.0),
+          //     ),
+          //   ],
+          // ),
+          _buildBottomButton(),
+          _buildBottomButton2('List', false),
+        ]);
   }
 
   final TextEditingController _textController1 = new TextEditingController();
@@ -546,9 +550,11 @@ class _OtcListState extends State<OtcListScreen>
           child: new TextField(
             keyboardType: TextInputType.number,
             controller: textController,
-            // onChanged: (String text) {
-            //   _isComposing = text.length > 0;
-            // },
+            onChanged: (String t) {
+              if (t.length > 0) {
+                handleSubmitted(otc, t);
+              }
+            },
             // onSubmitted: _isComposing ? handleSubmitted : null,
             onSubmitted: (t) => handleSubmitted(otc, t),
             decoration: new InputDecoration.collapsed(hintText: label),
