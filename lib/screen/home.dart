@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:ghala/otclist.dart';
+import 'package:ghala/repository/otc.dart';
+import 'package:ghala/screen/otclist.dart';
 import 'package:ghala/profile/drawer.dart';
 import 'package:ghala/profile/signin.dart';
 import 'package:ghala/secret.dart';
-import 'package:ghala/sheet.dart';
+import 'package:ghala/repository/sheet.dart';
 import 'package:intl/intl.dart';
 
-class Home extends StatefulWidget {
-  Home();
+/// Show customers list.
+class HomeScreen extends StatefulWidget {
+  HomeScreen();
 
   @override
   _WhatsAppHomeState createState() => new _WhatsAppHomeState();
@@ -23,7 +25,7 @@ class CustomerData {
   DateTime updated;
 }
 
-class _WhatsAppHomeState extends State<Home>
+class _WhatsAppHomeState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
   List<CustomerData> _customerList;
@@ -41,6 +43,7 @@ class _WhatsAppHomeState extends State<Home>
     print(userName);
     var items = await CustomerDb.loadItemFromSheets();
     var list = await CustomerDb.loadFromSheets(userName, items);
+
     setState(() {
       _customerList = list;
     });
@@ -116,44 +119,43 @@ class _WhatsAppHomeState extends State<Home>
 
   Widget _buildCustomerItem(int i) {
     var customer = _customerList[i];
-    return new GestureDetector(
-      onTap: () {
-        _onTap(i);
-      },
-      onLongPress: () {},
-      child: new Column(
-        children: <Widget>[
-          new ListTile(
-            // leading: new CircleAvatar(
-            //   foregroundColor: Theme.of(context).primaryColor,
-            //   backgroundColor: Colors.grey,
-            //   backgroundImage: new NetworkImage(''),
-            // ),
-            title: new Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                new Text(
-                  customer.name,
-                  style: new TextStyle(fontWeight: FontWeight.bold),
+    return Padding(
+      padding: new EdgeInsets.all(4.0),
+      child: new Container(
+        decoration: new BoxDecoration(color: Colors.yellowAccent),
+        child: OutlineButton(
+          onPressed: () {
+            _onTap(i);
+          },
+          padding:
+              EdgeInsets.only(top: 4.0, right: 4.0, bottom: 0.0, left: 4.0),
+          child: new Column(
+            children: <Widget>[
+              new ListTile(
+                title: new Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    new Text(
+                      customer.name,
+                      style: new TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    new Text(
+                      customer.debt.toString(),
+                      style: new TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red[300],
+                      ),
+                    ),
+                    new Text(
+                      date(customer),
+                      style: new TextStyle(color: Colors.grey, fontSize: 14.0),
+                    ),
+                  ],
                 ),
-                new Text(
-                  customer.debt.toString(),
-                  style: new TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red[300],
-                  ),
-                ),
-                new Text(
-                  date(customer),
-                  style: new TextStyle(color: Colors.grey, fontSize: 14.0),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          new Divider(
-            height: 10.0,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ghala/login.dart';
+import 'package:ghala/profile/login.dart';
 import 'package:ghala/profile/signin.dart';
 import 'package:ghala/sl/message.dart';
 

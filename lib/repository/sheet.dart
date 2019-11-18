@@ -1,5 +1,6 @@
-import 'package:ghala/home.dart';
-import 'package:ghala/otclist.dart';
+import 'package:ghala/repository/otc.dart';
+import 'package:ghala/screen/home.dart';
+import 'package:ghala/screen/otclist.dart';
 import 'package:ghala/secret.dart';
 import 'package:ghala/sl/googlesheets.dart';
 

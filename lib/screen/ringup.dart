@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ghala/home.dart';
-import 'package:ghala/otclist.dart';
+import 'package:ghala/repository/otc.dart';
+import 'package:ghala/screen/home.dart';
+import 'package:ghala/screen/otclist.dart';
 import 'package:flutter/services.dart';
 
+/// Show Ring up.
 class RingupScreen extends StatefulWidget {
   RingupScreen({this.customer});
 
@@ -37,7 +39,6 @@ class _RingupState extends State<RingupScreen>
   Widget screen() {
     return new Scaffold(
       key: _scaffoldKey,
-      // appBar: appBar(),
       body: body(),
     );
   }
@@ -46,7 +47,6 @@ class _RingupState extends State<RingupScreen>
     return new AppBar(
       title: new GestureDetector(
         onTap: () {
-          // reload();
         },
         child: Text(customer.name),
       ),
@@ -77,23 +77,13 @@ class _RingupState extends State<RingupScreen>
 
   Widget _buildCustomerItem(int i) {
     var otc = _otcList[i];
-    // return newResultItem(otc);
-    // OTC薬のリンクを表示する
     return Padding(
       padding: new EdgeInsets.all(4.0),
       child: OutlineButton(
-        // borderSide: BorderSide(width: 1.0, color: Colors.black),
-        // shape: new RoundedRectangleBorder(
-        //     borderRadius: new BorderRadius.circular(0.0)),
         padding: EdgeInsets.only(top: 4.0, right: 4.0, bottom: 0.0, left: 4.0),
         child: new Column(
           children: <Widget>[
             new ListTile(
-              // leading: new CircleAvatar(
-              //   foregroundColor: Theme.of(context).primaryColor,
-              //   backgroundColor: Colors.grey,
-              //   backgroundImage: new NetworkImage(''),
-              // ),
               title: new Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
@@ -391,7 +381,8 @@ class _RingupState extends State<RingupScreen>
 
     if (count) {
       if (caution) {
-        final snackBar = SnackBar(content: Text('There are some items that are not counted.'));
+        final snackBar = SnackBar(
+            content: Text('There are some items that are not counted.'));
         _scaffoldKey.currentState.showSnackBar(snackBar);
         return;
       }

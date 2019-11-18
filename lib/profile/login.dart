@@ -1,5 +1,5 @@
-import 'package:ghala/app.dart';
-import 'package:ghala/home.dart';
+import 'package:ghala/profile/app.dart';
+import 'package:ghala/screen/home.dart';
 import 'package:ghala/profile/signin.dart';
 import 'package:flutter/material.dart';
 
@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: mode == 2
-          ? Home()
+          ? HomeScreen()
           : mode == 1
               ? Container(color: Colors.white)
               : Container(

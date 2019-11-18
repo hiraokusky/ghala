@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:ghala/home.dart';
-import 'package:ghala/login.dart';
+import 'package:ghala/profile/login.dart';
 import 'package:ghala/sl/message.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
 
@@ -34,10 +34,14 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState(title: this.title);
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final String title;
+
+  _MyHomePageState({this.title});
+
   @override
   void initState() {
     super.initState();
@@ -81,8 +85,9 @@ class _MyHomePageState extends State<MyHomePage> {
         const Locale.fromSubtags(languageCode: 'it'), // Italy
         const Locale.fromSubtags(languageCode: 'ru'), // Russia
         const Locale.fromSubtags(languageCode: 'es'), // Spain
+        const Locale.fromSubtags(languageCode: 'sw'), // Swahiri
       ],
-      title: "Ghala",
+      title: this.title,
       theme: new ThemeData(
           // primaryColor: new Color(0xff075E54),
           accentColor: new Color(0xff25D366),
