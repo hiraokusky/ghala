@@ -52,7 +52,32 @@ class OtcListState extends State<OtcListScreen>
       key: _scaffoldKey,
       appBar: appBar(),
       body: body(),
+      floatingActionButton: buildBottomNavigationBar(context, barcodeScanning),
     );
+  }
+
+  Widget buildBottomNavigationBar(context, run) {
+    return Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            heroTag: 'scan',
+            backgroundColor: Colors.blueAccent,
+            onPressed: () {
+              run();
+            },
+            child: Icon(
+              Icons.camera_alt,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      SizedBox(
+        height: 50.0,
+      ),
+    ]);
   }
 
   // Scanned barcode data.
@@ -115,7 +140,7 @@ class OtcListState extends State<OtcListScreen>
         ),
       ),
       new Divider(height: 1.0),
-      Parts().buildBottomButton(context, barcodeScanning),
+      // Parts().buildBottomButton(context, barcodeScanning),
       Parts().buildBottomButton3(context, _handleDone)
     ]);
   }
@@ -149,7 +174,7 @@ class OtcListState extends State<OtcListScreen>
     return Padding(
       padding: new EdgeInsets.all(4.0),
       child: new Container(
-        decoration: new BoxDecoration(color: Colors.greenAccent),
+        decoration: new BoxDecoration(color: (otc.count == 0 ? Colors.greenAccent : Colors.white)),
         child: OutlineButton(
           padding:
               EdgeInsets.only(top: 4.0, right: 4.0, bottom: 0.0, left: 4.0),

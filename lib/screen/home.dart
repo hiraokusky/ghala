@@ -40,9 +40,9 @@ class _WhatsAppHomeState extends State<HomeScreen>
 
   // Google sheetからデータをロード
   Future reload() async {
-    print(userName);
+    print(userEmail);
     var items = await CustomerDb.loadItemFromSheets();
-    var list = await CustomerDb.loadFromSheets(userName, items);
+    var list = await CustomerDb.loadFromSheets(userEmail, items);
 
     setState(() {
       _customerList = list;

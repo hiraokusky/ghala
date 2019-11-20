@@ -46,8 +46,7 @@ class _RingupState extends State<RingupScreen>
   Widget appBar() {
     return new AppBar(
       title: new GestureDetector(
-        onTap: () {
-        },
+        onTap: () {},
         child: Text(customer.name),
       ),
       elevation: 0.7,
@@ -140,7 +139,7 @@ class _RingupState extends State<RingupScreen>
   int use = 0;
 
   // 集金額
-  int collection = 0;
+  int collection = -1;
 
   // 価格
   _buildBottomNavigationBar() {
@@ -166,7 +165,7 @@ class _RingupState extends State<RingupScreen>
     int claim = use + debt;
 
     // 次回請求額
-    int next = claim - collection;
+    int next = claim - (collection >= 0 ? collection : 0);
 
     return Container(
         width: MediaQuery.of(context).size.width,
@@ -339,9 +338,11 @@ class _RingupState extends State<RingupScreen>
             flex: 2,
             child: RaisedButton(
               onPressed: () async {
-                _handleDone();
+                if (collection >= 0) {
+                  _handleDone();
+                }
               },
-              color: Colors.blue,
+              color: (collection >= 0) ? Colors.blue : Colors.white,
               child: Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -354,8 +355,10 @@ class _RingupState extends State<RingupScreen>
                       width: 4.0,
                     ),
                     Text(
-                      "Ring up",
-                      style: TextStyle(color: Colors.white),
+                      (collection >= 0) ? "Ring up" : "(Input collection)",
+                      style: TextStyle(
+                        color: (collection >= 0) ? Colors.white : Colors.black,
+                      ),
                     ),
                   ],
                 ),
@@ -404,6 +407,7 @@ class _RingupState extends State<RingupScreen>
     int claim = use + customer.debt;
 
     // 売上
+    collection = (collection >= 0 ? collection : 0);
     customer.sale += collection;
 
     // 次回請求額

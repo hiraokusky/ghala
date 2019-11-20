@@ -77,7 +77,7 @@ class _OtcState extends State<OtcScreen> with SingleTickerProviderStateMixin {
               itemBuilder: (context, i) => list[i],
             ),
           ),
-          Parts().buildBottomButton(context, this.state.barcodeScanning),
+          // Parts().buildBottomButton(context, this.state.barcodeScanning),
           Parts().buildBottomButton2(context, _handleDone, _onBack, 'List'),
         ]);
   }
