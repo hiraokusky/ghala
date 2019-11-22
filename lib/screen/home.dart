@@ -83,7 +83,7 @@ class _WhatsAppHomeState extends State<HomeScreen>
       ),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.file_upload),
+          icon: Icon(Icons.cached),
           onPressed: () {
             final snackBar = SnackBar(content: Text('Uploading...'));
             _scaffoldKey.currentState.showSnackBar(snackBar);
