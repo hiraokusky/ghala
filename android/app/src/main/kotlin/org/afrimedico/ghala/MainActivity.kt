@@ -1,4 +1,4 @@
-package com.curerix.ghala
+package org.afrimedico.ghala
 
 import android.os.Bundle
 
