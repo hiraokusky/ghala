@@ -206,14 +206,14 @@ class Parts {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Icon(
-                      Icons.check,
+                      Icons.camera_alt,
                       color: Colors.white,
                     ),
                     SizedBox(
                       width: 4.0,
                     ),
                     Text(
-                      "Collect monery",
+                      "Scan AMORE",
                       style: TextStyle(color: Colors.white),
                     ),
                   ],

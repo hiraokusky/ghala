@@ -22,6 +22,7 @@ class CustomerDb {
       ];
       sheet.values.last[++n] = ['', '', 'sale', row.sale];
       sheet.values.last[++n] = ['', '', 'debt', row.debt];
+      sheet.values.last[++n] = ['', '', 'box', row.box];
       for (var otc in row.otcList) {
         sheet.values.last[++n] = [
           '',
@@ -78,6 +79,8 @@ class CustomerDb {
           user.sale = int.parse(value);
         } else if (key == 'debt') {
           user.debt = int.parse(value);
+        } else if (key == 'box') {
+          user.box = value;
         } else {
           var item = items[key];
 

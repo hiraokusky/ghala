@@ -371,6 +371,8 @@ class _RingupState extends State<RingupScreen>
   }
 
   void _handleDone() {
+
+    
     // baseがあるのにcountが0ならcaution
     var caution = false;
     var count = false;
@@ -383,12 +385,13 @@ class _RingupState extends State<RingupScreen>
     }
 
     if (count) {
-      if (caution) {
-        final snackBar = SnackBar(
-            content: Text('There are some items that are not counted.'));
-        _scaffoldKey.currentState.showSnackBar(snackBar);
-        return;
-      }
+      // 0にするケースもあるかもしれない
+      // if (caution) {
+      //   final snackBar = SnackBar(
+      //       content: Text('There are some items that are not counted.'));
+      //   _scaffoldKey.currentState.showSnackBar(snackBar);
+      //   return;
+      // }
 
       // 在庫数
       for (var i = 0; i < _otcList.length; i++) {
@@ -418,6 +421,6 @@ class _RingupState extends State<RingupScreen>
     // 更新日時
     customer.updated = DateTime.now().toUtc();
 
-    Navigator.pop(context, false);
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 }

@@ -30,13 +30,14 @@ dependencies:
   googleapis: any
   googleapis_auth: any
   barcode_scan:
-  # image_picker:
+  image_picker:
   shared_preferences: any
   csv: any
   firebase_auth: any
   google_sign_in: any
   uuid: any
   provider: ^3.1.0+1
+  pimp_my_button:
 
 dev_dependencies:
   flutter_test:
@@ -63,6 +64,7 @@ flutter:
     - assets/mdb/
     - assets/data/
     - assets/icons/
+    - assets/animals/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

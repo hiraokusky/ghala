@@ -91,7 +91,7 @@ class _OtcState extends State<OtcScreen> with SingleTickerProviderStateMixin {
   }
 
   _onBack() {
-    this.state.setState(() => this.state.barcode = '');
+    // this.state.setState(() => this.state.barcode = '');
   }
 
   Widget _show(label, otc, textController, handleSubmitted) {

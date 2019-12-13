@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
 import 'package:ghala/repository/otc.dart';
 import 'package:ghala/screen/otclist.dart';
@@ -6,6 +8,7 @@ import 'package:ghala/profile/signin.dart';
 import 'package:ghala/secret.dart';
 import 'package:ghala/repository/sheet.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 /// Show customers list.
 class HomeScreen extends StatefulWidget {
@@ -23,6 +26,7 @@ class CustomerData {
   int sale;
   int debt;
   DateTime updated;
+  String box;
 }
 
 class _WhatsAppHomeState extends State<HomeScreen>
@@ -70,7 +74,75 @@ class _WhatsAppHomeState extends State<HomeScreen>
       appBar: appBar(),
       body: body(),
       drawer: AppDrawer.showDrawer(context),
+      floatingActionButton: buildBottomNavigationBar(context, barcodeScanning),
     );
+  }
+
+  Widget buildBottomNavigationBar(context, run) {
+    return Column(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[
+      Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: <Widget>[
+          FloatingActionButton(
+            heroTag: 'scan',
+            backgroundColor: Colors.pink,
+            onPressed: () {
+              run();
+            },
+            child: Icon(
+              Icons.camera_alt,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+      // SizedBox(
+      //   height: 50.0,
+      // ),
+    ]);
+  }
+
+  // Scanned barcode data.
+  String barcode = "";
+  String message = "";
+
+// Method for scanning barcode....
+  Future barcodeScanning() async {
+    setState(() {
+      loading = true;
+    });
+    this.barcode = "";
+    try {
+      String barcode = await BarcodeScanner.scan();
+      _setBarcode(barcode);
+    } on PlatformException catch (e) {
+      if (e.code == BarcodeScanner.CameraAccessDenied) {
+        setState(() {
+          this.message = 'No camera permission!';
+        });
+      } else {
+        setState(() => this.message = 'Unknown error: $e');
+      }
+    } on FormatException {
+      setState(() => this.message = 'Nothing captured.');
+    } catch (e) {
+      setState(() => this.message = 'Unknown error: $e');
+    }
+    setState(() {
+      loading = false;
+    });
+  }
+
+  _setBarcode(barcode) {
+    setState(() => this.barcode = barcode);
+    if (_customerList != null) {
+      for (int i = 0; i < _customerList.length; i++) {
+        var customer = _customerList[i];
+        if (customer.box == barcode) {
+          _onTap(i);
+        }
+      }
+    }
   }
 
   Widget appBar() {
@@ -96,11 +168,15 @@ class _WhatsAppHomeState extends State<HomeScreen>
   }
 
   Widget body() {
+    if (loading) {
+      return Text("Processing...");
+    }
     if (_customerList == null) {
       return Text('No user data: ' + userName);
     }
     int len = _customerList != null ? _customerList.length : 0;
     return new Column(children: <Widget>[
+      Text(barcode),
       new Flexible(
         child: new ListView.builder(
           physics: BouncingScrollPhysics(),
@@ -160,7 +236,15 @@ class _WhatsAppHomeState extends State<HomeScreen>
     );
   }
 
+  bool loading = false;
+
   void _onTap(int index) async {
+    if (this.barcode.length > 0) {
+      _customerList[index].box = this.barcode;
+    }
+    setState(() {
+      this.barcode = "";
+    });
     Navigator.push(
         context,
         MaterialPageRoute(

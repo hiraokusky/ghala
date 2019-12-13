@@ -6,28 +6,27 @@ import 'package:ghala/repository/otc.dart';
 import 'package:ghala/screen/components/parts.dart';
 import 'package:ghala/screen/home.dart';
 import 'package:ghala/screen/otc.dart';
-import 'package:ghala/screen/otclist2.dart';
 import 'package:ghala/screen/ringup.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Show Otc list which customer has.
-class OtcListScreen extends StatefulWidget {
-  OtcListScreen({this.customer});
+class OtcListScreen2 extends StatefulWidget {
+  OtcListScreen2({this.customer});
 
   CustomerData customer;
 
   @override
-  OtcListState createState() => new OtcListState(customer: this.customer);
+  OtcListState2 createState() => new OtcListState2(customer: this.customer);
 }
 
-class OtcListState extends State<OtcListScreen>
+class OtcListState2 extends State<OtcListScreen2>
     with SingleTickerProviderStateMixin {
   TabController _tabController;
   List<OtcData> _otcList;
   CustomerData customer;
 
-  OtcListState({this.customer});
+  OtcListState2({this.customer});
 
   @override
   void initState() {
@@ -89,7 +88,7 @@ class OtcListState extends State<OtcListScreen>
         onTap: () {
           // reload();
         },
-        child: Text(customer.name + ' (Count)'),
+        child: Text(customer.name + ' (Add)'),
       ),
       elevation: 0.7,
     );
@@ -130,7 +129,7 @@ class OtcListState extends State<OtcListScreen>
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) => new OtcListScreen2(customer: customer)));
+              builder: (context) => new RingupScreen(customer: customer)));
     }
     setState(() {
       loading = false;
@@ -149,13 +148,13 @@ class OtcListState extends State<OtcListScreen>
   }
 
   _add(otc) {
-    otc.count++;
+    otc.add++;
     reload();
   }
 
   _remove(otc) {
-    if (otc.count > 0) {
-      otc.count--;
+    if (otc.add > 0) {
+      otc.add--;
       reload();
     }
   }
@@ -166,9 +165,7 @@ class OtcListState extends State<OtcListScreen>
       padding: new EdgeInsets.all(4.0),
       child: new Container(
         decoration: new BoxDecoration(
-            color: (otc.base > 0 && otc.count == 0
-                ? Colors.greenAccent
-                : otc.count > otc.base ? Colors.redAccent : Colors.white)),
+            color: (otc.add > 0 ? Colors.greenAccent : Colors.white)),
         child: OutlineButton(
           padding:
               EdgeInsets.only(top: 0.0, right: 0.0, bottom: 0.0, left: 0.0),
@@ -180,7 +177,7 @@ class OtcListState extends State<OtcListScreen>
                   children: <Widget>[
                     new Flexible(
                       flex: 1,
-                      child: Text(otc.base.toString()),
+                      child: Text("+" + otc.add.toString()),
                     ),
                     new Flexible(
                       flex: 1,
@@ -204,14 +201,19 @@ class OtcListState extends State<OtcListScreen>
                     new Flexible(
                       flex: 1,
                       child: new Text(
-                        otc.count.toString(),
+                        (otc.count + otc.add).toString(),
                         style: new TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 28.0),
                       ),
                     ),
+                    // new Text(
+                    //   'add: ' + otc.add.toString(),
+                    //   style: new TextStyle(color: Colors.black, fontSize: 16.0),
+                    // ),
                     new Flexible(
                       flex: 1,
                       child: SizedBox(
+                        width: 80, // specific value
                         height: 60,
                         child: RaisedButton.icon(
                           icon: Icon(
@@ -234,6 +236,7 @@ class OtcListState extends State<OtcListScreen>
                     new Flexible(
                       flex: 1,
                       child: SizedBox(
+                        width: 80, // specific value
                         height: 60,
                         child: RaisedButton.icon(
                           icon: Icon(
